@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import random
-import sys
+import math
 
 from fishing_game_core.game_tree import Node
 from fishing_game_core.player_utils import PlayerController
@@ -50,6 +50,35 @@ class PlayerControllerMinimax(PlayerController):
 
             # Execute next action
             self.sender({"action": best_move, "search_time": None})
+            
+    def heuristic_function(self, state):
+        score_A, score_B = state.get_player_scores()
+        return score_A - score_B  
+            
+    def minimax(self, node, player, depth, alpha, beta):
+        children = node.compute_and_get_children()
+        if len(children) == 0 or depth == 0:
+            return self.heuristic_function(node.state)
+        else:
+            if player == 0:
+                bestPossible = math.inf*(-1)
+                for child in children:
+                    bestPossible = max(bestPossible, self.minimax(child, 1, depth-1, alpha, beta))
+                    alpha = max(alpha, bestPossible)
+                    if beta <= alpha:
+                        break
+                return bestPossible
+            
+            else:
+                bestPossible = math.inf
+                for child in children:
+                    bestPossible = min(bestPossible, self.minimax(child, 0, depth-1, alpha, beta))
+                    beta = min(beta, bestPossible)
+                    if beta <= alpha:
+                        break
+                return bestPossible
+    
+         
 
     def search_best_next_move(self, initial_tree_node):
         """
@@ -65,32 +94,12 @@ class PlayerControllerMinimax(PlayerController):
 
         # NOTE: Don't forget to initialize the children of the current node
         #       with its compute_and_get_children() method!
-        children_of_node = initial_tree_node.compute_and_get_children()
-        
-        
-        random_move = random.randrange(5)
-        return ACTION_TO_STR[random_move]
+        #children_of_node = initial_tree_node.compute_and_get_children()
+        alpha = math.inf*(-1)
+        beta = math.inf
+        result = self.minimax(initial_tree_node, 0, 100, alpha, beta)
+        print('result is '+result)
+        # random_move = random.randrange(5)
+        return ACTION_TO_STR[result]
     
-    def minimax(state, player, children_of_node):
-        if len(children_of_node) == 0:
-            return heuristic_function(state)
-        else:
-            if state.get_player() == player:
-                bestPossible = -sys.maxint - 1
-                for child in children_of_node:
-                    children = child.compute_and_get_children()
-                    v = minimax(state, player, children)
-                    bestPossible = max(bestPossible, v)
-                return bestPossible
-            
-            else:
-                bestPossible = sys.maxint
-                for child in children_of_node:
-                    children = child.compute_and_get_children()
-                    v = minimax(state, player, children)
-                    bestPossible = min(bestPossible, v)
-                return bestPossible
     
-    def heruistic_function(state):
-        score_A, score_B = state.get_player_scores()
-        return score_A - score_B         
