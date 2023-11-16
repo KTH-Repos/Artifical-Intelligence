@@ -67,6 +67,7 @@ class PlayerControllerMinimax(PlayerController):
                     alpha = max(alpha, bestPossible)
                     if beta <= alpha:
                         break
+                #print('bestpossible for max is '+ str(bestPossible))
                 return bestPossible
             
             else:
@@ -76,8 +77,8 @@ class PlayerControllerMinimax(PlayerController):
                     beta = min(beta, bestPossible)
                     if beta <= alpha:
                         break
+                #print('bestpossible for min is '+ str(bestPossible))
                 return bestPossible
-    
          
 
     def search_best_next_move(self, initial_tree_node):
@@ -95,11 +96,17 @@ class PlayerControllerMinimax(PlayerController):
         # NOTE: Don't forget to initialize the children of the current node
         #       with its compute_and_get_children() method!
         #children_of_node = initial_tree_node.compute_and_get_children()
+        first_level = initial_tree_node.compute_and_get_children()
         alpha = math.inf*(-1)
         beta = math.inf
-        result = self.minimax(initial_tree_node, 0, 100, alpha, beta)
-        print('result is '+result)
-        # random_move = random.randrange(5)
-        return ACTION_TO_STR[result]
-    
-    
+        bestChild = None
+        bestResult = alpha
+        for child in first_level:
+            #print("hej!!!!!")
+            result = self.minimax(child, 0, 2, alpha, beta)
+            #print("hejjjj2!!!!!") #TODO Fastnar ppå första barnet. Minimax måste fixas
+            if result > bestResult:
+                bestResult = result
+                bestChild = child
+        print(ACTION_TO_STR[bestChild.move])
+        return ACTION_TO_STR[bestChild.move] 
