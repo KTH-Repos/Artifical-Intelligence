@@ -50,10 +50,6 @@ class PlayerControllerMinimax(PlayerController):
 
             # Execute next action
             self.sender({"action": best_move, "search_time": None})
-            
-    ''' def heuristic_function(self, state):
-        score_A, score_B = state.get_player_scores()
-        return score_A - score_B   '''
         
     def heuristic_function(self, state):
         hook_pos = state.get_hook_positions()
@@ -61,30 +57,34 @@ class PlayerControllerMinimax(PlayerController):
         fish_pos = state.get_fish_positions()
         fish_values = state.get_fish_scores()
         score_A, score_B = state.get_player_scores()
-
-        nearme_metric = 10
-        proximity_score = 0
-        
-        #calculate how close fishes are to green_boat hook. TODO: Fix it.
+        big_score = math.inf * (-1)
         for fish in fish_pos:
-    
             fish_coordinates = fish_pos[fish]
-            if abs(green_hook_pos[0] - fish_coordinates[0])<=5 and abs(green_hook_pos[1] - fish_coordinates[1]) <= 5:
+            if abs(green_hook_pos[0] - fish_coordinates[0]) <= 3 and abs(green_hook_pos[1] - fish_coordinates[1]) <= 3:
                 # Nu har vi avgränsat området till ett visst antal fiskar som är närliggande. Nästa steg är att kolla på deras scores:
-                big_score = math.inf * (-1)
                 fish_score = fish_values[fish]
 
                 if fish_score > big_score and fish_score > 0:
                     big_score = fish_score
 
-                return big_score
+        score_diff = score_A - score_B
 
-            else:
-                return score_A - score_B           
+        return max(score_diff, big_score)
+    
 
-        
-        #calculate
-            
+    # def heuristic_function(self, state):
+    #     #fish_pos = state.get_fish_positions()
+    #     fish_values = state.get_fish_scores()
+
+    #     big_score = math.inf * (-1)
+    #     for fish in fish_values:
+    #         fish_score = fish_values[fish]
+    #         if fish_score > big_score and fish_score > 0:
+    #             big_score = fish_score
+
+    #     return big_score
+
+
     def minimax(self, node, player, depth, alpha, beta):
         children = node.compute_and_get_children()
         if len(children) == 0 or depth == 0:
@@ -116,20 +116,13 @@ class PlayerControllerMinimax(PlayerController):
         :rtype: str
         """
 
-        # EDIT THIS METHOD TO RETURN BEST NEXT POSSIBLE MODE USING MINIMAX ###
-
-        # NOTE: Don't forget to initialize the children of the current node
-        #       with its compute_and_get_children() method!
-        #children_of_node = initial_tree_node.compute_and_get_children()
         first_level = initial_tree_node.compute_and_get_children()
         alpha = math.inf*(-1)
         beta = math.inf
         bestChild = None
         bestResult = alpha
         for child in first_level:
-            #print("hej!!!!!")
-            result = self.minimax(child, 0, 3, alpha, beta)
-            #print("hejjjj2!!!!!") #TODO Fastnar ppå första barnet. Minimax måste fixas
+            result = self.minimax(child, 0, 2, alpha, beta)
             if result > bestResult:
                 bestResult = result
                 bestChild = child
