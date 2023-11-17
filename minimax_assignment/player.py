@@ -51,35 +51,60 @@ class PlayerControllerMinimax(PlayerController):
             # Execute next action
             self.sender({"action": best_move, "search_time": None})
             
-    def heuristic_function(self, state):
+    ''' def heuristic_function(self, state):
         score_A, score_B = state.get_player_scores()
-        return score_A - score_B  
+        return score_A - score_B   '''
+        
+    def heuristic_function(self, state):
+        hook_pos = state.get_hook_positions()
+        green_hook_pos = next(iter(hook_pos.values()))
+        fish_pos = state.get_fish_positions()
+        fish_values = state.get_fish_scores()
+        score_A, score_B = state.get_player_scores()
+
+        nearme_metric = 10
+        proximity_score = 0
+        
+        #calculate how close fishes are to green_boat hook. TODO: Fix it.
+        for fish in fish_pos:
+    
+            fish_coordinates = fish_pos[fish]
+            if abs(green_hook_pos[0] - fish_coordinates[0])<=5 and abs(green_hook_pos[1] - fish_coordinates[1]) <= 5:
+                # Nu har vi avgränsat området till ett visst antal fiskar som är närliggande. Nästa steg är att kolla på deras scores:
+                big_score = math.inf * (-1)
+                fish_score = fish_values[fish]
+
+                if fish_score > big_score and fish_score > 0:
+                    big_score = fish_score
+
+                return big_score
+
+            else:
+                return score_A - score_B           
+
+        
+        #calculate
             
     def minimax(self, node, player, depth, alpha, beta):
         children = node.compute_and_get_children()
         if len(children) == 0 or depth == 0:
             return self.heuristic_function(node.state)
+        elif player == 0:
+            bestPossible = math.inf*(-1)
+            for child in children:
+                bestPossible = max(bestPossible, self.minimax(child, 1, depth-1, alpha, beta))
+                alpha = max(alpha, bestPossible)
+                if beta <= alpha:
+                    break
         else:
-            if player == 0:
-                bestPossible = math.inf*(-1)
-                for child in children:
-                    bestPossible = max(bestPossible, self.minimax(child, 1, depth-1, alpha, beta))
-                    alpha = max(alpha, bestPossible)
-                    if beta <= alpha:
-                        break
-                #print('bestpossible for max is '+ str(bestPossible))
-                return bestPossible
-            
-            else:
-                bestPossible = math.inf
-                for child in children:
-                    bestPossible = min(bestPossible, self.minimax(child, 0, depth-1, alpha, beta))
-                    beta = min(beta, bestPossible)
-                    if beta <= alpha:
-                        break
-                #print('bestpossible for min is '+ str(bestPossible))
-                return bestPossible
-         
+            bestPossible = math.inf
+            for child in children:
+                bestPossible = min(bestPossible, self.minimax(child, 0, depth-1, alpha, beta))
+                beta = min(beta, bestPossible)
+                if beta <= alpha:
+                    break
+        return bestPossible
+        
 
     def search_best_next_move(self, initial_tree_node):
         """
@@ -103,10 +128,10 @@ class PlayerControllerMinimax(PlayerController):
         bestResult = alpha
         for child in first_level:
             #print("hej!!!!!")
-            result = self.minimax(child, 0, 2, alpha, beta)
+            result = self.minimax(child, 0, 3, alpha, beta)
             #print("hejjjj2!!!!!") #TODO Fastnar ppå första barnet. Minimax måste fixas
             if result > bestResult:
                 bestResult = result
                 bestChild = child
-        print(ACTION_TO_STR[bestChild.move])
+        #print(ACTION_TO_STR[bestChild.move])
         return ACTION_TO_STR[bestChild.move] 
