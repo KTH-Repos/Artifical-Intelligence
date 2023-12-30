@@ -49,22 +49,16 @@ class PlayerControllerMinimax(PlayerController):
 
             # Execute next action
             self.sender({"action": best_move, "search_time": None})
-
-    def h2f_distance(self, fish_position, hook_position):
-            y = abs(fish_position[1] - hook_position[1])
-            dx = abs(fish_position[0] - hook_position[0])
-            x = min(dx, 20 - dx) # 20*20 grid 
-        
-            return x + y
-
+            
     def heuristic_function(self, state):
         total_score = state.player_scores[0] - state.player_scores[1]
     
-        h = 0
+        likelihood = 0
         for i in state.fish_positions:
             fish_positions = state.fish_positions[i]
             hook_positions = state.hook_positions[0]
 
+            #calculate manhattan distance between hook and every uncaught fish
             y = abs(fish_positions[1] - hook_positions[1])
             delta_x = abs(fish_positions[0] - hook_positions[0])
             x = min(delta_x, 20 - delta_x)
@@ -72,17 +66,16 @@ class PlayerControllerMinimax(PlayerController):
 
             fish_score = state.fish_scores[i]
             
-            if fish_score > 0 and distance == 0:
-                return float('inf')
-            
             if fish_score > 0:
-                #exp_distance = math.exp(-distance)
-                h = max(h, fish_score * 1/distance)
+                if distance == 0:
+                    return float('inf')
+            
+                likelihood = max(likelihood, fish_score * 1/distance)
 
-        return 2 * total_score + h
+        return 3 * total_score + likelihood
 
     
-    def hash_function(self, state):
+    def hash_state(self, state):
         fish_positions = state.get_fish_positions()
         fish_scores = state.get_fish_scores()
 
@@ -92,7 +85,6 @@ class PlayerControllerMinimax(PlayerController):
 
 
     def alpha_beta(self, node, player, depth, alpha, beta, transposition_table, initial_time):
-        
         if time.time() - initial_time > 0.05:
             raise TimeoutError
         
@@ -146,10 +138,10 @@ class PlayerControllerMinimax(PlayerController):
         :return: either "stay", "left", "right", "up" or "down"
         :rtype: str
         """       
-        depth = 0
         start_time = time.time()
         transposition_table = dict()
         timeout = False
+        depth = 0
         best_move = 0
         
         while not timeout:
@@ -159,6 +151,4 @@ class PlayerControllerMinimax(PlayerController):
                 best_move = result
             except:
                 timeout = True
-        #print(ACTION_TO_STR[bestChild.move])
         return ACTION_TO_STR[best_move] 
-        
