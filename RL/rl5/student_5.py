@@ -3,16 +3,16 @@
 alpha = 0.1
 
 # Q learning discount rate
-gamma = 0.5
+gamma = 0.9
 
 # Epsilon initial
-epsilon_initial = 0.2
+epsilon_initial = 1
 
 # Epsilon final
-epsilon_final = 1
+epsilon_final = 0.2
 
 # Annealing timesteps
 annealing_timesteps = 1000
 
 # threshold
-threshold = 1e-6
+threshold = 0.001
